@@ -16,7 +16,7 @@ type Transaction struct {
 	Sender Address
 	Receiver Address
 	Amount float64
-	Tax float65
+	Tax float64
 }
 
 type Hash string
@@ -38,29 +38,6 @@ type Block struct {
 	PrevHash Hash `json:"prev_hash"`
 	Nonce int `json: "nonce"`
 	Reward float64 `json:"reward"`
-}
-
-func (b *Block) getInfoStr() (string, error) {
-	blockData, err := json.MarshalIndent(b, "", "  ")
-	if err != nil {
-		return "", scripts.WrapError("Failed to return block data", err)
-	}
-
-	return string(blockData), nil
-}
-
-func (b *Block) getInfoMap() (map[string]interface{}) {
-	blockData := make(map[string]interface{})
-	v := reflect.ValueOf(b).Elem()
-	t := refelct.Type(b)
-
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := t.Field(i).Name
-		fieldValue := v.Field(i).Interface()
-
-		blockData[strings.ToLower(fieldName)] = fieldValue
-	}
-	return blockData
 }
 
 func (b *Block) Serializer() (string, error) {
