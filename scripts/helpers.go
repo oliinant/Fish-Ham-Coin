@@ -36,14 +36,14 @@ func getInfoStr(s any) (string, error) {
 
 func getInfoMap(s any) (map[string]interface{}) {
 	sData := make(map[string]interface{})
-	v := reflect.ValueOf(b).Elem()
-	t := reflect.Type(b)
+	v := reflect.ValueOf(s).Elem()
+	t := reflect.Type(s)
 
 	vElem := ptrToElem(v)
 	tElem := ptrToElem(t)
 
 	for i := 0; i < vElem.NumField(); i++ {
-		fieldName := tElem.Field(i).Name()
+		fieldName := tElem.Field(i).Name
 		fieldValue := vElem.Field(i).Interface()
 
 		sData[strings.ToLower(fieldName)] = fieldValue
