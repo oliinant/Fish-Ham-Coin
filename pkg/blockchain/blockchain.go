@@ -7,6 +7,8 @@ import (
 	"crypto/sha256"
 	"unicode"
 	"fish-ham/scripts"
+	"reflect"
+	"strings"
 )
 
 
@@ -14,6 +16,7 @@ type Transaction struct {
 	Sender Address
 	Receiver Address
 	Amount float64
+	Tax float65
 }
 
 type Hash string
@@ -28,18 +31,42 @@ func HashIt(s string) (Hash, error) {
 }
 
 type Block struct {
-	Index int
-	Timestamp time.Time
-	Data []Transaction
-	Hash Hash
-	PrevHash Hash
-	Nonce int 
+	Index int `json:"index"`
+	Timestamp time.Time `json:"timestamp"`
+	Transactions []Transaction `json:"transactions"`
+	Hash Hash `json:"hash"`
+	PrevHash Hash `json:"prev_hash"`
+	Nonce int `json: "nonce"`
+	Reward float64 `json:"reward"`
+}
+
+func (b *Block) getInfoStr() (string, error) {
+	blockData, err := json.MarshalIndent(b, "", "  ")
+	if err != nil {
+		return "", scripts.WrapError("Failed to return block data", err)
+	}
+
+	return string(blockData), nil
+}
+
+func (b *Block) getInfoMap() (map[string]interface{}) {
+	blockData := make(map[string]interface{})
+	v := reflect.ValueOf(b).Elem()
+	t := refelct.Type(b)
+
+	for i := 0; i < v.NumField(); i++ {
+		fieldName := t.Field(i).Name
+		fieldValue := v.Field(i).Interface()
+
+		blockData[strings.ToLower(fieldName)] = fieldValue
+	}
+	return blockData
 }
 
 func (b *Block) Serializer() (string, error) {
 	delimiter := "\\fh~8"
 
-	dataJSON, err := json.Marshal(b.Data)
+	dataJSON, err := json.Marshal(b.Transactions)
 	if err != nil {
 		return "", scripts.WrapError("Failed to serialize block", err)
 	}
@@ -71,4 +98,10 @@ func (b *Block) CalculateHash() (Hash, error) {
 	}
 
 	return hashHash, nil
+}
+
+type Blockchain struct {
+	Chain map[Hash]*Block
+	Tips map[Hash]*Block
+	Genesis *Block 
 }
