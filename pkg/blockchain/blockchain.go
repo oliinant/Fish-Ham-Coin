@@ -13,10 +13,24 @@ import (
 
 
 type Transaction struct {
-	Sender Address
-	Receiver Address
-	Amount float64
-	Tax float64
+	ID int `json: "id"`
+	Sender string `json: "sender"`
+	Receiver string `json: "receiver"`
+	Amount float64 `json: "amount"`
+	Tax float64 `json: "tax"`
+}
+
+type TxList struct {
+	Transactions []Transaction
+}
+
+func (txs *TxList) getTxListInfoMap () {
+	txListMap = []map[string]interface{}{}
+
+	for _, tx := range txs.Transactions {
+		txListMap = append(txListMap, scripts.getInfoMap(txs))
+	}
+	return txListMap
 }
 
 type Hash string
@@ -33,7 +47,7 @@ func HashIt(s string) (Hash, error) {
 type Block struct {
 	Index int `json:"index"`
 	Timestamp time.Time `json:"timestamp"`
-	Transactions []Transaction `json:"transactions"`
+	Transactions TxList `json:"transactions"`
 	Hash Hash `json:"hash"`
 	PrevHash Hash `json:"prev_hash"`
 	Nonce int `json: "nonce"`
