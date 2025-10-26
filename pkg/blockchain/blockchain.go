@@ -6,28 +6,75 @@ import (
 	"encoding/json"
 	"crypto/sha256"
 	"github.com/oliinant/fish-ham/scripts"
+	"github.com/google/uuid"
 )
 
 
 type Transaction struct {
-	ID int `json:"id"`
+	ID uuid.UUID `json:"id"`
+	Timestamp time.Time `json:"timestamp"`
 	Sender string `json:"sender"`
 	Receiver string `json:"receiver"`
 	Amount float64 `json:"amount"`
 	Tax float64 `json:"tax"`
 }
 
-type TxList struct {
-	Transactions []Transaction `json:"transactions"`
+func CustomTxInit(time time.Time, sender string, receiver string, amount float64, taxPercent float64) *Transaction {
+	taxDecimal := taxPercent / 100
+
+	return &Transaction{
+		ID: uuid.New(),
+		Timestamp: time,
+		Sender: sender,
+		Receiver: receiver,
+		Amount: amount,
+		Tax: amount * taxDecimal,
+	}
 }
 
-func (txs *TxList) getTxListInfoMap() []map[string]interface{} {
+// Default means time is when transaction created and tax is 1%
+func DefaultTxInit(sender string, receiver string, amount float64) *Transaction {
+	return &Transaction{
+		ID: uuid.New(),
+		Timestamp: time.Now(),
+		Sender: sender,
+		Receiver: receiver,
+		Amount: amount,
+		Tax: amount * 0.01,
+	}
+}
+
+type TxList struct {
+	Transactions map[uuid.UUID]*Transaction `json:"transactions"`
+}
+
+func (txs *TxList) TxListInfoMap() []map[string]interface{} {
 	txListMap := []map[string]interface{}{}
 
 	for _, tx := range txs.Transactions {
-		txListMap = append(txListMap, scripts.GetInfoMap(tx))
+		info := scripts.InfoMap(tx)
+		txListMap = append(txListMap, info)
 	}
 	return txListMap
+}
+
+func (txs *TxList) AddTransaction(tx *Transaction) {
+	if txs.Transactions == nil {
+		txs.Transactions = make(map[uuid.UUID]*Transaction)
+	}
+	txs.Transactions[tx.ID] = tx
+}
+
+func (txs *TxList) RemoveTransactionByID(id uuid.UUID) {
+	delete(txs.Transactions, id)
+}
+
+func (txs *TxList) TransactionByID(id uuid.UUID) (*Transaction, error) {
+	tx, ok := txs.Transactions[id]
+	if !ok {
+		return nil, fmt.Errorf("Transaction %s not found", id.String())
+	}
+	return tx, nil
 }
 
 type Hash string
@@ -51,7 +98,7 @@ type Block struct {
 	Transactions TxList `json:"transactions"`
 	Hash Hash `json:"hash"`
 	PrevHash Hash `json:"prev_hash"`
-	Nonce int `json: "nonce"`
+	Nonce int `json:"nonce"`
 	Reward float64 `json:"reward"`
 }
 

@@ -23,7 +23,7 @@ func PtrToElem(v reflect.Value) reflect.Value {
 	return v.Elem()
 }
 
-func GetInfoStr(s any) (string, error) {
+func InfoStr(s any) (string, error) {
 	t := reflect.TypeOf(s)
 	errorMessage := fmt.Sprintf("Failed to return %s data as string", t.Name())
 
@@ -35,7 +35,7 @@ func GetInfoStr(s any) (string, error) {
 	return string(sJSON), nil
 }
 
-func GetInfoMap(s any) (map[string]interface{}) {
+func InfoMap(s any) (map[string]interface{}) {
 	sData := make(map[string]interface{})
 	v := reflect.ValueOf(s).Elem()
 
