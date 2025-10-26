@@ -85,3 +85,13 @@ func BoilerTestFunc[T any, U any](
 		})
 	}
 }
+
+func checkTextExistence(s interface{}) error {
+	sElem := PtrToElem(reflect.ValueOf(s))
+	tElem := sElem.Type()
+
+	if sElem.String() == "" {
+		return fmt.Errorf("Empty %s given", tElem.Name())
+	}
+	return nil
+}
