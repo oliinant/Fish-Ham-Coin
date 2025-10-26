@@ -5,30 +5,27 @@ import (
 	"time"
 	"encoding/json"
 	"crypto/sha256"
-	"unicode"
-	"fish-ham/scripts"
-	"reflect"
-	"strings"
+	"github.com/oliinant/fish-ham/scripts"
 )
 
 
 type Transaction struct {
-	ID int `json: "id"`
-	Sender string `json: "sender"`
-	Receiver string `json: "receiver"`
-	Amount float64 `json: "amount"`
-	Tax float64 `json: "tax"`
+	ID int `json:"id"`
+	Sender string `json:"sender"`
+	Receiver string `json:"receiver"`
+	Amount float64 `json:"amount"`
+	Tax float64 `json:"tax"`
 }
 
 type TxList struct {
-	Transactions []Transaction
+	Transactions []Transaction `json:"transactions"`
 }
 
-func (txs *TxList) getTxListInfoMap () {
-	txListMap = []map[string]interface{}{}
+func (txs *TxList) getTxListInfoMap() []map[string]interface{} {
+	txListMap := []map[string]interface{}{}
 
 	for _, tx := range txs.Transactions {
-		txListMap = append(txListMap, scripts.getInfoMap(txs))
+		txListMap = append(txListMap, scripts.GetInfoMap(tx))
 	}
 	return txListMap
 }
@@ -36,6 +33,10 @@ func (txs *TxList) getTxListInfoMap () {
 type Hash string
 
 func HashIt(s string) (Hash, error) {
+	if s == "" {
+		return "", fmt.Errorf("Failed hash conversion: Empty string")
+	}
+
 	for _, r  := range s {
 		if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F' )) {
 			return "", fmt.Errorf("Invalid character in hash: %q", r)
@@ -67,7 +68,7 @@ func (b *Block) Serializer() (string, error) {
 		b.Timestamp, delimiter,
 		string(dataJSON), delimiter,
 		b.PrevHash, delimiter,
-		b.Nonce
+		b.Nonce,
 	)
 	return serializedBlock, nil
 }
